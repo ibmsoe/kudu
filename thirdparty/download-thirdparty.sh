@@ -274,7 +274,10 @@ if [ ! -d $TRACE_VIEWER_SOURCE ]; then
 fi
 
 if [ -n "$OS_LINUX" -a ! -d $NVML_SOURCE ]; then
-  fetch_and_expand nvml-${NVML_VERSION}.tar.gz
+  git clone https://github.com/krzycz/nvml
+  cd nvml
+  git checkout pmem-non_x86_arch_2
+  cd -
 fi
 
 BOOST_PATCHLEVEL=1
