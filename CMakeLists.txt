@@ -136,7 +136,7 @@ endif()
 #     GCC cannot always verify whether strict aliasing rules are indeed followed due to
 #     fundamental limitations in escape analysis, which can result in subtle bad code generation.
 #     This has a small perf hit but worth it to avoid hard to debug crashes.
-set(CXX_COMMON_FLAGS "-fno-strict-aliasing -msse4.2 -Wall -Wno-sign-compare -Wno-deprecated -pthread")
+set(CXX_COMMON_FLAGS "-fno-strict-aliasing -Wall -Wno-sign-compare -Wno-deprecated -pthread -mvsx -mpower8-vector -maltivec")
 
 # We want access to the PRI* print format macros.
 add_definitions(-D__STDC_FORMAT_MACROS)
@@ -315,7 +315,7 @@ endif()
 
 # For any C code, use the same flags.
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
 # Flag to enable clang undefined behavior sanitizer
 # We explicitly don't enable all of the sanitizer flags:
