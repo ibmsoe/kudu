@@ -20,7 +20,14 @@
 #include <boost/utility/binary.hpp>
 #include <glog/logging.h>
 #include <stdint.h>
+
+#ifdef ARCH_X86_64
 #include <smmintrin.h>
+#endif
+
+#ifdef __ALTIVEC__
+#include "kudu/util/veclib_headers.h"
+#endif /* __ALTIVEC__ */
 
 #include "kudu/util/faststring.h"
 
@@ -99,7 +106,9 @@ inline const uint8_t *DecodeGroupVarInt32_SlowButSafe(
 
 inline void DoExtractM128(__m128i results,
                           uint32_t *a, uint32_t *b, uint32_t *c, uint32_t *d) {
+#ifdef ARCH_X86_64
 #define SSE_USE_EXTRACT_PS
+#endif
 #ifdef SSE_USE_EXTRACT_PS
   // _mm_extract_ps turns into extractps, which is slightly faster
   // than _mm_extract_epi32 (which turns into pextrd)

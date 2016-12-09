@@ -25,6 +25,7 @@ fi
 TP_SOURCE_DIR="$TP_DIR/src"
 TP_BUILD_DIR="$TP_DIR/build"
 
+ARCH_NAME=`uname -p`
 # This URL corresponds to the CloudFront Distribution for the S3
 # bucket cloudera-thirdparty-libs which is directly accessible at
 # http://cloudera-thirdparty-libs.s3.amazonaws.com/
@@ -160,9 +161,15 @@ TRACE_VIEWER_VERSION=21d76f8350fea2da2aa25cb6fd512703497d0c11
 TRACE_VIEWER_NAME=kudu-trace-viewer-$TRACE_VIEWER_VERSION
 TRACE_VIEWER_SOURCE=$TP_SOURCE_DIR/$TRACE_VIEWER_NAME
 
-NVML_VERSION=1.1
-NVML_NAME=nvml-$NVML_VERSION
-NVML_SOURCE=$TP_SOURCE_DIR/$NVML_NAME
+
+if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+  NVML_NAME=nvml  #cloning for ppc64le
+  NVML_SOURCE=$TP_SOURCE_DIR/$NVML_NAME
+else
+  NVML_VERSION=1.1
+  NVML_NAME=nvml-$NVML_VERSION
+  NVML_SOURCE=$TP_SOURCE_DIR/$NVML_NAME
+fi
 
 BOOST_VERSION=1_61_0
 BOOST_NAME=boost_$BOOST_VERSION
@@ -186,3 +193,15 @@ BREAKPAD_SOURCE=$TP_SOURCE_DIR/$BREAKPAD_NAME
 SPARSEHASH_VERSION=47a55825ca3b35eab1ca22b7ab82b9544e32a9af
 SPARSEHASH_NAME=sparsehash-c11-$SPARSEHASH_VERSION
 SPARSEHASH_SOURCE=$TP_SOURCE_DIR/$SPARSEHASH_NAME
+
+#Adding support for veclib headers required to build kudu on ppc4le
+if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+  VECLIB_VERSION=1.0.4
+  VECLIB_NAME=veclib.$VECLIB_VERSION
+  VECLIB_SOURCE=$TP_SOURCE_DIR/$VECLIB_NAME
+
+  #For some required veclib features, we need gcc-4.9.3 to be installed
+  GCC_VERSION=4.9.3
+  GCC_NAME=gcc-$GCC_VERSION
+  GCC_SOURCE=$TP_SOURCE_DIR/$GCC_NAME
+fi
