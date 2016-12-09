@@ -102,6 +102,23 @@ fetch_and_expand() {
 mkdir -p $TP_SOURCE_DIR
 cd $TP_SOURCE_DIR
 
+#For PPC systems gcc-4.9.3 is installed via the custom build scipt in :
+#https://github.com/ibmsoe/native-toolchain/blob/master/source/kudu/build.sh
+
+if [[ "$(uname -p)" != "ppc"* ]]; then
+ GCC_PATCHLEVEL=2
+ delete_if_wrong_patchlevel $GCC_DIR $GCC_PATCHLEVEL
+ if [[ "$OSTYPE" =~ ^linux ]] && [[ ! -d $GCC_DIR ]]; then
+  #fetch_and_expand gcc-${GCC_VERSION}.tar.gz
+  #pushd $GCC_DIR/libstdc++-v3
+  #patch -p0 < $TP_DIR/patches/libstdcxx-fix-string-dtor.patch
+  #patch -p0 < $TP_DIR/patches/libstdcxx-fix-tr1-shared-ptr.patch
+  #cd ..
+  #touch patchlevel-$GCC_PATCHLEVEL
+  #popd
+ fi
+fi
+
 GLOG_PATCHLEVEL=2
 delete_if_wrong_patchlevel $GLOG_SOURCE $GLOG_PATCHLEVEL
 if [ ! -d $GLOG_SOURCE ]; then
@@ -238,7 +255,10 @@ if [ ! -d $TRACE_VIEWER_SOURCE ]; then
 fi
 
 if [ -n "$OS_LINUX" -a ! -d $NVML_SOURCE ]; then
-  fetch_and_expand nvml-${NVML_VERSION}.tar.gz
+  git clone https://github.com/krzycz/nvml
+  cd nvml
+  git checkout pmem-non_x86_arch_2
+  cd -
 fi
 
 BOOST_PATCHLEVEL=1
