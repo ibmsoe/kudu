@@ -80,7 +80,7 @@
 #include "kudu/gutil/atomicops-internals-arm-generic.h"
 #elif defined(__GNUC__) && (defined(__i386) || defined(__x86_64__))
 #include "kudu/gutil/atomicops-internals-x86.h"
-#elif defined(__GNUC__) && defined(ARCH_POWERPC64)
+#elif defined(__GNUC__) && (defined(__powerpc__) || defined(__powerpc64__))
 #include "kudu/gutil/atomicops-internals-powerpc.h"
 #elif defined(OS_WINDOWS)
 #include "kudu/gutil/atomicops-internals-windows.h"

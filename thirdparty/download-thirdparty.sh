@@ -284,7 +284,14 @@ if [ ! -d $TRACE_VIEWER_SOURCE ]; then
 fi
 
 if [ -n "$OS_LINUX" -a ! -d $NVML_SOURCE ]; then
-  fetch_and_expand nvml-${NVML_VERSION}.tar.gz
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    git clone https://github.com/krzycz/nvml
+    cd nvml
+    git checkout pmem-non_x86_arch_3
+    cd -
+  else
+    fetch_and_expand nvml-${NVML_VERSION}.tar.gz
+  fi
 fi
 
 BOOST_PATCHLEVEL=1
@@ -323,6 +330,21 @@ if [ ! -d "$SPARSEHASH_SOURCE" ]; then
   patch -p1 < $TP_DIR/patches/sparsehash-0001-Add-compatibily-for-gcc-4.x-in-traits.patch
   touch patchlevel-$SPARSEHASH_PATCHLEVEL
   popd
+fi
+
+#Adding support for veclib headers download, required to build kudu on ppc64le
+if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+  if [ ! -d "$VECLIB_SOURCE" ]; then
+    wget https://www.ibm.com/developerworks/community/files/form/anonymous/api/library/b8b3a7b1-379f-4140-9d5f-73f658d8b2f5/document/8a241b79-6598-48c9-9be0-1bc119c4483c/version/083dcf48-922f-4974-9142-cae276cf53aa/media/$VECLIB_NAME.tar
+    tar -xf $VECLIB_NAME.tar
+    rm -rf $VECLIB_NAME.tar
+  fi
+
+  if [ ! -d "$GCC_SOURCE" ]; then
+    wget http://gd.tuwien.ac.at/gnu/gcc/releases/${GCC_NAME}/${GCC_NAME}.tar.bz2
+    tar -xvf ${GCC_NAME}.tar.bz2
+    rm -rf ${GCC_NAME}.tar.bz2
+  fi
 fi
 
 echo "---------------"
