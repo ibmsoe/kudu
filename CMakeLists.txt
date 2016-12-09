@@ -130,7 +130,7 @@ endif()
 
 # compiler flags that are common across debug/release builds
 #  - msse4.2: Enable sse4.2 compiler intrinsics.
-set(CXX_COMMON_FLAGS "-msse4.2")
+set(CXX_COMMON_FLAGS "-mvsx -mpower8-vector -maltivec")
 #  - Wall: Enable all warnings.
 set(CXX_COMMON_FLAGS "${CXX_COMMON_FLAGS} -Wall")
 #  - Wno-sign-compare: suppress warnings for comparison between signed and unsigned
@@ -328,7 +328,7 @@ endif()
 
 # For any C code, use the same flags.
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
 # Flag to enable clang undefined behavior sanitizer
 # We explicitly don't enable all of the sanitizer flags:
