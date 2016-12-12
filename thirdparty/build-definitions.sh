@@ -278,6 +278,7 @@ build_libunwind() {
   # Disable minidebuginfo, which depends on liblzma, until/unless we decide to
   # add liblzma to thirdparty.
   $LIBUNWIND_SOURCE/configure \
+    --build=powerpc64le-unknown-linux-gnu \
     --disable-minidebuginfo \
     --with-pic \
     --prefix=$PREFIX
@@ -571,9 +572,9 @@ build_crcutil() {
   rsync -av --delete $CRCUTIL_SOURCE/ .
   ./autogen.sh
   if [[ "$(uname -p)" == "ppc"* ]]; then
-    patch -p10 < $CRCUTIL_BDIR/../../thirdparty/ppc-patches/kudu_crc_makefile_am.patch
+    patch -p10 < $CRCUTIL_BDIR/../../ppc-patches/kudu_crc_makefile_am.patch
     cd ./examples
-    patch -p11 < $CRCUTIL_BDIR/../../thirdparty/ppc-patches/kudu_crc_interface_cc.patch
+    patch -p11 < $CRCUTIL_BDIR/../../ppc-patches/kudu_crc_interface_cc.patch
     cd -
   fi
   CFLAGS="$EXTRA_CFLAGS" \
