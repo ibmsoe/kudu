@@ -20,7 +20,11 @@
 
 #include <arpa/inet.h>
 #include <climits>
+
+#ifdef ARCH_X86_64
 #include <nmmintrin.h>
+#endif
+
 #include <string.h>
 
 #include "kudu/common/types.h"
@@ -240,6 +244,7 @@ struct KeyEncoderTraits<BINARY, Buffer> {
   // REQUIRES: len == 16 or 8
   template<int LEN>
   static bool SSEEncodeChunk(const uint8_t** srcp, uint8_t** dstp) {
+    #ifdef ARCH_X86_64
     COMPILE_ASSERT(LEN == 16 || LEN == 8, invalid_length);
     __m128i data;
     if (LEN == 16) {
@@ -276,6 +281,8 @@ struct KeyEncoderTraits<BINARY, Buffer> {
     *dstp += LEN;
     *srcp += LEN;
     return true;
+    #endif
+    return false;
   }
 
   // Non-SSE loop which encodes 'len' bytes from 'srcp' into 'dst'.
