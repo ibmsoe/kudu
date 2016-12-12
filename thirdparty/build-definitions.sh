@@ -205,19 +205,35 @@ build_llvm() {
          $PREFIX/lib/clang/ \
          $PREFIX/lib/cmake/{llvm,clang}
 
-  cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=$PREFIX \
-    -DLLVM_INCLUDE_DOCS=OFF \
-    -DLLVM_INCLUDE_EXAMPLES=OFF \
-    -DLLVM_INCLUDE_TESTS=OFF \
-    -DLLVM_INCLUDE_UTILS=OFF \
-    -DLLVM_TARGETS_TO_BUILD=X86 \
-    -DLLVM_ENABLE_RTTI=ON \
-    -DCMAKE_CXX_FLAGS="$EXTRA_CXXFLAGS $EXTRA_LDFLAGS" \
-    -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
-    $TOOLS_ARGS \
-    $LLVM_SOURCE
+  if [[ "$(uname -p)" == "ppc"* ]]; then
+    cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=$PREFIX \
+      -DLLVM_INCLUDE_DOCS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=OFF \
+      -DLLVM_INCLUDE_TESTS=OFF \
+      -DLLVM_INCLUDE_UTILS=OFF \
+      -DLLVM_TARGETS_TO_BUILD=PowerPC \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DCMAKE_CXX_FLAGS="$EXTRA_CXXFLAGS $EXTRA_LDFLAGS" \
+      -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
+      $TOOLS_ARGS \
+      $LLVM_SOURCE
+  else
+    cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=$PREFIX \
+      -DLLVM_INCLUDE_DOCS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=OFF \
+      -DLLVM_INCLUDE_TESTS=OFF \
+      -DLLVM_INCLUDE_UTILS=OFF \
+      -DLLVM_TARGETS_TO_BUILD=X86 \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DCMAKE_CXX_FLAGS="$EXTRA_CXXFLAGS $EXTRA_LDFLAGS" \
+      -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
+      $TOOLS_ARGS \
+      $LLVM_SOURCE
+  fi
 
   make -j$PARALLEL install
 
@@ -253,6 +269,12 @@ build_libunwind() {
   LIBUNWIND_BDIR=$TP_BUILD_DIR/$LIBUNWIND_NAME$MODE_SUFFIX
   mkdir -p $LIBUNWIND_BDIR
   pushd $LIBUNWIND_BDIR
+  
+  if [[ "$(uname -p)" == "ppc"* ]]; then
+     echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $LIBUNWIND_BDIR/../../src/libunwind-1.1a/tests/Makefile.am
+     cd $LIBUNWIND_BDIR/../../src/libunwind-1.1a; autoreconf -i; cd -
+  fi
+ 
   # Disable minidebuginfo, which depends on liblzma, until/unless we decide to
   # add liblzma to thirdparty.
   $LIBUNWIND_SOURCE/configure \
@@ -424,6 +446,9 @@ build_bitshuffle() {
     if [ "$arch" == "avx2" ]; then
       arch_flag="-mavx2"
     fi
+    if [[ "$(uname -p)" == "ppc"* ]]; then
+      arch_flag="-mvsx"
+    fi
     tmp_obj=bitshuffle_${arch}_tmp.o
     dst_obj=bitshuffle_${arch}.o
     ${CC:-gcc} $EXTRA_CFLAGS $arch_flag -std=c99 -I$PREFIX/include -O3 -DNDEBUG -fPIC -c \
@@ -492,24 +517,46 @@ build_curl() {
   CURL_BDIR=$TP_BUILD_DIR/$CURL_NAME$MODE_SUFFIX
   mkdir -p $CURL_BDIR
   pushd $CURL_BDIR
-  $CURL_SOURCE/configure \
-    --prefix=$PREFIX \
-    --disable-dict \
-    --disable-file \
-    --disable-ftp \
-    --disable-gopher \
-    --disable-imap \
-    --disable-ipv6 \
-    --disable-ldap \
-    --disable-ldaps \
-    --disable-manual \
-    --disable-pop3 \
-    --disable-rtsp \
-    --disable-smtp \
-    --disable-telnet \
-    --disable-tftp \
-    --without-librtmp \
-    --without-ssl
+  if [[ "$(uname -p)" == "ppc"* ]]; then
+    $CURL_SOURCE/configure \
+      --prefix=$PREFIX \
+      --disable-dict \
+      --disable-file \
+      --disable-ftp \
+      --build=powerpc64le-unknown-linux-gnu \
+      --disable-gopher \
+      --disable-imap \
+      --disable-ipv6 \
+      --disable-ldap \
+      --disable-ldaps \
+      --disable-manual \
+      --disable-pop3 \
+      --disable-rtsp \
+      --disable-smtp \
+      --disable-telnet \
+      --disable-tftp \
+      --without-librtmp \
+      --without-ssl
+  else
+    $CURL_SOURCE/configure \
+      --prefix=$PREFIX \
+      --disable-dict \
+      --disable-file \
+      --disable-ftp \
+      --disable-gopher \
+      --disable-imap \
+      --disable-ipv6 \
+      --disable-ldap \
+      --disable-ldaps \
+      --disable-manual \
+      --disable-pop3 \
+      --disable-rtsp \
+      --disable-smtp \
+      --disable-telnet \
+      --disable-tftp \
+      --without-librtmp \
+      --without-ssl
+  fi
   make -j$PARALLEL install
   popd
 }
@@ -523,7 +570,12 @@ build_crcutil() {
   # directories, so just prepopulate the latter using the former.
   rsync -av --delete $CRCUTIL_SOURCE/ .
   ./autogen.sh
-
+  if [[ "$(uname -p)" == "ppc"* ]]; then
+    patch -p10 < $CRCUTIL_BDIR/../../thirdparty/ppc-patches/kudu_crc_makefile_am.patch
+    cd ./examples
+    patch -p11 < $CRCUTIL_BDIR/../../thirdparty/ppc-patches/kudu_crc_interface_cc.patch
+    cd -
+  fi
   CFLAGS="$EXTRA_CFLAGS" \
     CXXFLAGS="$EXTRA_CXXFLAGS" \
     LDFLAGS="$EXTRA_LDFLAGS" \
