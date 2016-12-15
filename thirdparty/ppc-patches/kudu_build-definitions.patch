@@ -1,0 +1,50 @@
+--- /home/test/kudu/thirdparty/build-definitions.sh	2016-11-11 10:13:59.435759495 +0530
++++ /home/test/native-toolchain/source/kudu/kudu/thirdparty/build-definitions.sh	2016-11-24 15:34:40.830425145 +0530
+@@ -212,7 +212,7 @@
+     -DLLVM_INCLUDE_EXAMPLES=OFF \
+     -DLLVM_INCLUDE_TESTS=OFF \
+     -DLLVM_INCLUDE_UTILS=OFF \
+-    -DLLVM_TARGETS_TO_BUILD=X86 \
++    -DLLVM_TARGETS_TO_BUILD=PowerPC \
+     -DLLVM_ENABLE_RTTI=ON \
+     -DCMAKE_CXX_FLAGS="$EXTRA_CXXFLAGS $EXTRA_LDFLAGS" \
+     -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
+@@ -253,12 +253,17 @@
+   LIBUNWIND_BDIR=$TP_BUILD_DIR/$LIBUNWIND_NAME$MODE_SUFFIX
+   mkdir -p $LIBUNWIND_BDIR
+   pushd $LIBUNWIND_BDIR
++  echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $SOURCE_DIR/source/kudu/kudu*/thirdparty/src/libunwind-1.1a/tests/Makefile.am
++  cd $SOURCE_DIR/source/kudu/kudu*/thirdparty/src/libunwind-1.1a; autoreconf -i; cd -
+   # Disable minidebuginfo, which depends on liblzma, until/unless we decide to
+   # add liblzma to thirdparty.
+   $LIBUNWIND_SOURCE/configure \
++    CFLAGS="-g -O2 -m64 -maltivec" CXXFLAGS="-g -O2 -m64 -maltivec" \
++    --build=powerpc64le-unknown-linux-gnu \
+     --disable-minidebuginfo \
+     --with-pic \
+     --prefix=$PREFIX
++  make clean
+   make -j$PARALLEL install
+   popd
+ }
+@@ -462,6 +467,7 @@
+     --disable-dict \
+     --disable-file \
+     --disable-ftp \
++        --build=powerpc64le-unknown-linux-gnu \
+     --disable-gopher \
+     --disable-imap \
+     --disable-ipv6 \
+@@ -488,7 +494,11 @@
+   # directories, so just prepopulate the latter using the former.
+   rsync -av --delete $CRCUTIL_SOURCE/ .
+   ./autogen.sh
+-
++  patch -p10 < $SOURCE_DIR/source/kudu/ppc-patches/kudu_crc_makefile_am.patch
++  cd ./examples
++  patch -p11 < $SOURCE_DIR/source/kudu/ppc-patches/kudu_crc_interface_cc.patch
++  cd -
++  autoreconf -i;
+   CFLAGS="$EXTRA_CFLAGS" \
+     CXXFLAGS="$EXTRA_CXXFLAGS" \
+     LDFLAGS="$EXTRA_LDFLAGS" \
