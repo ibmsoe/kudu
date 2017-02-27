@@ -257,7 +257,7 @@ fi
 if [ -n "$OS_LINUX" -a ! -d $NVML_SOURCE ]; then
   git clone https://github.com/krzycz/nvml
   cd nvml
-  git checkout pmem-non_x86_arch_2
+  git checkout pmem-non_x86_arch_3
   cd -
 fi
 
