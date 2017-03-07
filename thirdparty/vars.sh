@@ -161,8 +161,8 @@ TRACE_VIEWER_NAME=kudu-trace-viewer-$TRACE_VIEWER_VERSION
 TRACE_VIEWER_SOURCE=$TP_SOURCE_DIR/$TRACE_VIEWER_NAME
 
 
-if [[ "$(uname -p)" == "ppc"* ]]; then
-  NVML_NAME=nvml  #cloning for ppc
+if [[ "$(uname -p)" == "ppc64le" ]]; then
+  NVML_NAME=nvml  #cloning for ppc64le
   NVML_SOURCE=$TP_SOURCE_DIR/$NVML_NAME
 else
   NVML_VERSION=1.1
