@@ -205,7 +205,7 @@ build_llvm() {
          $PREFIX/lib/clang/ \
          $PREFIX/lib/cmake/{llvm,clang}
 
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=$PREFIX \
@@ -270,7 +270,7 @@ build_libunwind() {
   mkdir -p $LIBUNWIND_BDIR
   pushd $LIBUNWIND_BDIR
   
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
      echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $LIBUNWIND_BDIR/../../src/libunwind-1.1a/tests/Makefile.am
      cd $LIBUNWIND_BDIR/../../src/libunwind-1.1a; autoreconf -i; cd -
   fi
@@ -447,7 +447,7 @@ build_bitshuffle() {
     if [ "$arch" == "avx2" ]; then
       arch_flag="-mavx2"
     fi
-    if [[ "$(uname -p)" == "ppc"* ]]; then
+    if [[ "$(uname -p)" == "ppc64le" ]]; then
       arch_flag="-mvsx"
     fi
     tmp_obj=bitshuffle_${arch}_tmp.o
@@ -518,7 +518,7 @@ build_curl() {
   CURL_BDIR=$TP_BUILD_DIR/$CURL_NAME$MODE_SUFFIX
   mkdir -p $CURL_BDIR
   pushd $CURL_BDIR
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
     $CURL_SOURCE/configure \
       --prefix=$PREFIX \
       --disable-dict \
@@ -571,7 +571,7 @@ build_crcutil() {
   # directories, so just prepopulate the latter using the former.
   rsync -av --delete $CRCUTIL_SOURCE/ .
   ./autogen.sh
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
     patch -p10 < $CRCUTIL_BDIR/../../ppc-patches/kudu_crc_makefile_am.patch
     cd ./examples
     patch -p11 < $CRCUTIL_BDIR/../../ppc-patches/kudu_crc_interface_cc.patch

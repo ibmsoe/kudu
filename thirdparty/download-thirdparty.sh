@@ -105,7 +105,7 @@ cd $TP_SOURCE_DIR
 #For PPC systems gcc-4.9.3 is installed via the custom build scipt in :
 #https://github.com/ibmsoe/native-toolchain/blob/master/source/kudu/build.sh
 
-if [[ "$(uname -p)" != "ppc"* ]]; then
+if [[ "$(uname -p)" != "ppc64le" ]]; then
  GCC_PATCHLEVEL=2
  delete_if_wrong_patchlevel $GCC_DIR $GCC_PATCHLEVEL
  if [[ "$OSTYPE" =~ ^linux ]] && [[ ! -d $GCC_DIR ]]; then
