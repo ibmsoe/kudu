@@ -204,36 +204,25 @@ build_llvm() {
          $PREFIX/lib/clang/ \
          $PREFIX/lib/cmake/{llvm,clang}
 
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
-    cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX=$PREFIX \
-      -DLLVM_INCLUDE_DOCS=OFF \
-      -DLLVM_INCLUDE_EXAMPLES=OFF \
-      -DLLVM_INCLUDE_TESTS=OFF \
-      -DLLVM_INCLUDE_UTILS=OFF \
-      -DLLVM_TARGETS_TO_BUILD=PowerPC \
-      -DLLVM_ENABLE_RTTI=ON \
-      -DCMAKE_CXX_FLAGS="$EXTRA_CXXFLAGS $EXTRA_LDFLAGS" \
-      -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
-      $TOOLS_ARGS \
-      $LLVM_SOURCE
+  TARGET=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    TARGET+="PowerPC"
   else
-    cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX=$PREFIX \
-      -DLLVM_INCLUDE_DOCS=OFF \
-      -DLLVM_INCLUDE_EXAMPLES=OFF \
-      -DLLVM_INCLUDE_TESTS=OFF \
-      -DLLVM_INCLUDE_UTILS=OFF \
-      -DLLVM_TARGETS_TO_BUILD=X86 \
-      -DLLVM_ENABLE_RTTI=ON \
-      -DCMAKE_CXX_FLAGS="$EXTRA_CXXFLAGS $EXTRA_LDFLAGS" \
-      -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
-      $TOOLS_ARGS \
-      $LLVM_SOURCE
+    TARGET+="X86"
   fi
-
+  cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=$PREFIX \
+    -DLLVM_INCLUDE_DOCS=OFF \
+    -DLLVM_INCLUDE_EXAMPLES=OFF \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_INCLUDE_UTILS=OFF \
+    -DLLVM_TARGETS_TO_BUILD=$TARGET \
+    -DLLVM_ENABLE_RTTI=ON \
+    -DCMAKE_CXX_FLAGS="$EXTRA_CXXFLAGS $EXTRA_LDFLAGS" \
+    -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
+    $TOOLS_ARGS \
+    $LLVM_SOURCE
   make -j$PARALLEL $EXTRA_MAKEFLAGS install
 
   if [[ "$BUILD_TYPE" == "normal" ]]; then
@@ -270,7 +259,7 @@ build_libunwind() {
   mkdir -p $LIBUNWIND_BDIR
   pushd $LIBUNWIND_BDIR
   
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
      echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $LIBUNWIND_BDIR/../../src/libunwind-1.1a/tests/Makefile.am
      cd $LIBUNWIND_BDIR/../../src/libunwind-1.1a; autoreconf -i; cd -
   fi
@@ -303,13 +292,20 @@ build_glog() {
   #
   # This comment applies both here and the locations elsewhere in this script
   # where we add something to -Wl,-rpath.
+  CONFIGURE_FLAGS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    CONFIGURE_FLAGS+="--build=powerpc64le-unknown-linux-gnu"
+  fi
+  cd $TP_BUILD_DIR/../src/glog*
+  autoreconf -i
+  cd -
   CXXFLAGS="$EXTRA_CXXFLAGS -I$PREFIX/include" \
     LDFLAGS="$EXTRA_LDFLAGS -L$PREFIX/lib -Wl,-rpath,$PREFIX/lib" \
     LIBS="$EXTRA_LIBS" \
     $GLOG_SOURCE/configure \
     --with-pic \
     --prefix=$PREFIX \
-    --with-gflags=$PREFIX
+    --with-gflags=$PREFIX $CONFIGURE_FLAGS
   fixup_libtool
   make -j$PARALLEL $EXTRA_MAKEFLAGS install
   popd
@@ -447,7 +443,7 @@ build_bitshuffle() {
     if [ "$arch" == "avx2" ]; then
       arch_flag="-mavx2"
     fi
-    if [[ "$(uname -p)" == "ppc64le" ]]; then
+    if [[ "$ARCH_NAME" == "ppc64le" ]]; then
       arch_flag="-mvsx"
     fi
     tmp_obj=bitshuffle_${arch}_tmp.o
@@ -521,54 +517,33 @@ build_curl() {
 
   # Note: curl shows a message asking for CPPFLAGS to be used for include
   # directories, not CFLAGS.
-  if [[ "$(uname -p)" == "ppc"* ]]; then
-    CFLAGS="$EXTRA_CFLAGS" \
-    CPPFLAGS="$EXTRA_CPPFLAGS $OPENSSL_CFLAGS" \
-    LDFLAGS="$EXTRA_LDFLAGS $OPENSSL_LDFLAGS" \
-    LIBS="$EXTRA_LIBS" \
-    $CURL_SOURCE/configure \
-      --prefix=$PREFIX \
-      --disable-dict \
-      --disable-file \
-      --disable-ftp \
-      --build=powerpc64le-unknown-linux-gnu \
-      --disable-gopher \
-      --disable-imap \
-      --disable-ipv6 \
-      --disable-ldap \
-      --disable-ldaps \
-      --disable-manual \
-      --disable-pop3 \
-      --disable-rtsp \
-      --disable-smtp \
-      --disable-telnet \
-      --disable-tftp \
-      --without-librtmp \
-      --without-ssl
-  else
-    CFLAGS="$EXTRA_CFLAGS" \
-    CPPFLAGS="$EXTRA_CPPFLAGS $OPENSSL_CFLAGS" \
-    LDFLAGS="$EXTRA_LDFLAGS $OPENSSL_LDFLAGS" \
-    LIBS="$EXTRA_LIBS" \
-    $CURL_SOURCE/configure \
-      --prefix=$PREFIX \
-      --disable-dict \
-      --disable-file \
-      --disable-ftp \
-      --disable-gopher \
-      --disable-imap \
-      --disable-ipv6 \
-      --disable-ldap \
-      --disable-ldaps \
-      --disable-manual \
-      --disable-pop3 \
-      --disable-rtsp \
-      --disable-smtp \
-      --disable-telnet \
-      --disable-tftp \
-      --without-librtmp \
-      --without-ssl
+
+  CONFIGURE_FLAGS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+     CONFIGURE_FLAGS+="--build=powerpc64le-unknown-linux-gnu"
   fi
+  CFLAGS="$EXTRA_CFLAGS" \
+  CPPFLAGS="$EXTRA_CPPFLAGS $OPENSSL_CFLAGS" \
+  LDFLAGS="$EXTRA_LDFLAGS $OPENSSL_LDFLAGS" \
+  LIBS="$EXTRA_LIBS" \
+  $CURL_SOURCE/configure \
+    --prefix=$PREFIX \
+    --disable-dict \
+    --disable-file \
+    --disable-ftp \
+    --disable-gopher \
+    --disable-imap \
+    --disable-ipv6 \
+    --disable-ldap \
+    --disable-ldaps \
+    --disable-manual \
+    --disable-pop3 \
+    --disable-rtsp \
+    --disable-smtp \
+    --disable-telnet \
+    --disable-tftp \
+    --without-librtmp \
+    --without-ssl $CONFIGURE_FLAGS
   make -j$PARALLEL install
   popd
 }
@@ -582,7 +557,7 @@ build_crcutil() {
   # directories, so just prepopulate the latter using the former.
   rsync -av --delete $CRCUTIL_SOURCE/ .
   ./autogen.sh
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
     patch -p10 < $CRCUTIL_BDIR/../../ppc-patches/kudu_crc_makefile_am.patch
     cd ./examples
     patch -p11 < $CRCUTIL_BDIR/../../ppc-patches/kudu_crc_interface_cc.patch
@@ -603,8 +578,12 @@ build_breakpad() {
   BREAKPAD_BDIR=$TP_BUILD_DIR/$BREAKPAD_NAME$MODE_SUFFIX
   mkdir -p $BREAKPAD_BDIR
   pushd $BREAKPAD_BDIR
-
-  CFLAGS="$EXTRA_CFLAGS" \
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    cd $BREAKPAD_BDIR/../../src/breakpad*
+    patch -p1 < $TP_BUILD_DIR/../src/breakpad-f78d953_ppc.patch
+    cd -
+  fi
+  CFLAG="$EXTRA_CFLAGS" \
     CXXFLAGS="$EXTRA_CXXFLAGS" \
     LDFLAGS="$EXTRA_LDFLAGS" \
     LIBS="$EXTRA_LIBS" \
