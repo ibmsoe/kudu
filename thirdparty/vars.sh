@@ -25,6 +25,7 @@ fi
 TP_SOURCE_DIR="$TP_DIR/src"
 TP_BUILD_DIR="$TP_DIR/build"
 
+ARCH_NAME=`uname -p`
 # This URL corresponds to the CloudFront Distribution for the S3
 # bucket cloudera-thirdparty-libs which is directly accessible at
 # http://cloudera-thirdparty-libs.s3.amazonaws.com/
@@ -161,7 +162,7 @@ TRACE_VIEWER_NAME=kudu-trace-viewer-$TRACE_VIEWER_VERSION
 TRACE_VIEWER_SOURCE=$TP_SOURCE_DIR/$TRACE_VIEWER_NAME
 
 
-if [[ "$(uname -p)" == "ppc64le" ]]; then
+if [[ "$ARCH_NAME" == "ppc64le" ]]; then
   NVML_NAME=nvml  #cloning for ppc64le
   NVML_SOURCE=$TP_SOURCE_DIR/$NVML_NAME
 else
