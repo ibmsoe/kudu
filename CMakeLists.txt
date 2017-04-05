@@ -127,10 +127,14 @@ endif()
 ############################################################
 # Compiler flags
 ############################################################
-
 # compiler flags that are common across debug/release builds
+if("$ENV{ARCH_NAME}" STREQUAL "ppc64le")
+#  - mvsx -mpower8-vector -maltivec: Enable altivec support for ppc64le
+  set(CXX_COMMON_FLAGS "-mvsx -mpower8-vector -maltivec")
+else()
 #  - msse4.2: Enable sse4.2 compiler intrinsics.
-set(CXX_COMMON_FLAGS "-mvsx -mpower8-vector -maltivec")
+  set(CXX_COMMON_FLAGS "-msse4.2")
+endif()
 #  - Wall: Enable all warnings.
 set(CXX_COMMON_FLAGS "${CXX_COMMON_FLAGS} -Wall")
 #  - Wno-sign-compare: suppress warnings for comparison between signed and unsigned

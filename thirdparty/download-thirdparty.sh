@@ -274,10 +274,14 @@ if [ ! -d $TRACE_VIEWER_SOURCE ]; then
 fi
 
 if [ -n "$OS_LINUX" -a ! -d $NVML_SOURCE ]; then
-  git clone https://github.com/krzycz/nvml
-  cd nvml
-  git checkout pmem-non_x86_arch_3
-  cd -
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    git clone https://github.com/krzycz/nvml
+    cd nvml
+    git checkout pmem-non_x86_arch_3
+    cd -
+  else
+    fetch_and_expand nvml-${NVML_VERSION}.tar.gz
+  fi
 fi
 
 BOOST_PATCHLEVEL=1
