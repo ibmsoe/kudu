@@ -322,5 +322,14 @@ if [ ! -d "$SPARSEHASH_SOURCE" ]; then
   popd
 fi
 
+#Adding support for veclib headers download, required to build kudu on ppc64le
+if [[ "$(uname -p)" == "ppc64le" ]]; then
+  if [ ! -d "$VECLIB_SOURCE" ]; then
+    wget https://www.ibm.com/developerworks/community/files/form/anonymous/api/library/b8b3a7b1-379f-4140-9d5f-73f658d8b2f5/document/8a241b79-6598-48c9-9be0-1bc119c4483c/version/083dcf48-922f-4974-9142-cae276cf53aa/media/$VECLIB_NAME.tar
+    tar -xf $VECLIB_NAME.tar
+    rm -rf $VECLIB_NAME.tar
+  fi
+fi
+
 echo "---------------"
 echo "Thirdparty dependencies downloaded successfully"

@@ -722,3 +722,12 @@ build_sparsehash() {
   rsync -av --delete sparsehash/ $PREFIX/include/sparsehash/
   popd
 }
+
+build_veclib() {
+  pushd $VECLIB_SOURCE
+  cp ./include/veclib_types.h $TP_SOURCE_DIR/../../src/kudu/util/
+  cp ./include/vecmisc.h $TP_SOURCE_DIR/../../src/kudu/util/
+  cp ./include/vec128*.h $TP_SOURCE_DIR/../../src/kudu/util/
+  popd
+  rm -rf $VECLIB_SOURCE
+}

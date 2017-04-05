@@ -222,6 +222,9 @@ if [ -n "$F_COMMON" -o -n "$F_SPARSEHASH" ]; then
   build_sparsehash
 fi
 
+if [[ "$(uname -p)" == "ppc64le" ]]; then
+  build_veclib
+fi
 ### Build C dependencies without instrumentation
 
 PREFIX=$PREFIX_DEPS
