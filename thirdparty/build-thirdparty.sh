@@ -222,8 +222,9 @@ if [ -n "$F_COMMON" -o -n "$F_SPARSEHASH" ]; then
   build_sparsehash
 fi
 
-if [[ "$(uname -p)" == "ppc64le" ]]; then
+if [[ "$ARCH_NAME" == "ppc64le" ]]; then
   build_veclib
+  build_gcc493
 fi
 ### Build C dependencies without instrumentation
 

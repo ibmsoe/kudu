@@ -199,4 +199,9 @@ if [[ "$ARCH_NAME" == "ppc64le" ]]; then
   VECLIB_VERSION=1.0.4
   VECLIB_NAME=veclib.$VECLIB_VERSION
   VECLIB_SOURCE=$TP_SOURCE_DIR/$VECLIB_NAME
+
+  #For some required veclib features, we need gcc-4.9.3 to be installed
+  GCC_VERSION=4.9.3
+  GCC_NAME=gcc-$GCC_VERSION
+  GCC_SOURCE=$TP_SOURCE_DIR/$GCC_NAME
 fi

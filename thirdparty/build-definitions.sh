@@ -263,14 +263,17 @@ build_libunwind() {
      echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $LIBUNWIND_BDIR/../../src/libunwind-1.1a/tests/Makefile.am
      cd $LIBUNWIND_BDIR/../../src/libunwind-1.1a; autoreconf -i; cd -
   fi
- 
+
+  CONFIGURE_FLAGS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    CONFIGURE_FLAGS+="--build=powerpc64le-unknown-linux-gnu"
+  fi
   # Disable minidebuginfo, which depends on liblzma, until/unless we decide to
   # add liblzma to thirdparty.
   $LIBUNWIND_SOURCE/configure \
-    --build=powerpc64le-unknown-linux-gnu \
     --disable-minidebuginfo \
     --with-pic \
-    --prefix=$PREFIX
+    --prefix=$PREFIX $CONFIGURE_FLAGS
   make -j$PARALLEL $EXTRA_MAKEFLAGS install
   popd
 }
@@ -730,4 +733,19 @@ build_veclib() {
   cp ./include/vec128*.h $TP_SOURCE_DIR/../../src/kudu/util/
   popd
   rm -rf $VECLIB_SOURCE
+}
+
+build_gcc493() {
+  GCC_BDIR=$TP_BUILD_DIR/$GCC_NAME$MODE_SUFFIX
+  pushd $GCC_SOURCE
+  ./contrib/download_prerequisites
+  ./configure --prefix=$GCC_BDIR --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++ --enable-plugin --enable-initfini-array --disable-libgcj --enable-gnu-indirect-function --enable-secureplt --with-long-double-128 --enable-targets=powerpcle-linux --disable-multilib --with-cpu-64=power8 --with-tune-64=power8 --build=powerpc64le-unknown-linux-gnu
+  make -j8
+  make install
+  popd
+  rm -rf $GCC_SOURCE
+  export CC=$GCC_BDIR/bin/gcc
+  export CXX=$GCC_BDIR/bin/g++
+  echo $CC
+  echo $CXX
 }
